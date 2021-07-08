@@ -1,6 +1,8 @@
 from typing import List
 
 from PIL import Image
+import numpy as np
+from decord import VideoReader
 import time
 
 
@@ -30,16 +32,27 @@ def predict(prediction_input):
 
     Example code for opening the image using PIL:
     image = Image.open('/app/images/'+image_file_name)
+
+    Example code for reading video and obtaining frames using decord
+    video = VideoReader('/app/videos/'+video_file_name)
     """
 
-    text_input = prediction_input  # If text model
-    image = Image.open('/app/images/' + prediction_input)  # If image model
+    # text_input = prediction_input  # If text model
+    # image = Image.open('/app/images/' + prediction_input)  # If image model
+    vr = VideoReader('/app/videos/' + prediction_input) #If video file
+    count_frames = len(vr)
+    key_indices = vr.get_key_indices()
+    timestamp = vr.get_frame_timestamp(key_indices)
+    timestamp_string = ''
+    for i in range(len(key_indices)):
+        timestamp_string += str(np.round(timestamp[i][0],2)) + "secs, "
 
     return {
-        'classes': ['isGreen', 'isRed'],  # List every class in the classifier
+        'classes': ['#frames', '#key-frames', 'timestamp of key_frames'],  # List every class in the classifier
         'result': {  # For results, use the class names above with the result value
-            'isGreen': 0,
-            'isRed': 1
+            '#frames': count_frames,
+            '#key-frames': len(key_indices),
+            'timestamp of key_frames': timestamp_string
         }
     }
 

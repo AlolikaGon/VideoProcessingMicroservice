@@ -1,7 +1,7 @@
 import pytest
 from model.model import init, predict
 from model.config import model_name, model_tags, model_type
-
+import os
 
 @pytest.fixture(scope="session", autouse=True)
 def initialize_model():
@@ -18,7 +18,7 @@ def test_model_name():
 
 
 def test_model_tags():
-    assert type(model_tags) is list  # Make sure the tag list object is a list.
+    assert type(model_tags) is str  # Make sure the tag list object is a string.
     assert len(model_tags) > 0  # Model must contain at least one tag
     for model_tag in model_tags:
         assert type(model_tag) is str  # Make sure tag is a string
@@ -32,7 +32,8 @@ def test_model_type():
 
 
 def test_predict_single_image():
-    image_file = '1.png'
+    # image_file = '1.png'
+    image_file = 'pexels-nadezhda-moryak-7803313.mp4'
     prediction_result = predict(image_file)
     assert len(prediction_result.keys()) == 2  # Ensure correct size dict returned
     assert 'classes' in prediction_result and 'result' in prediction_result  # Ensure fields present
@@ -51,7 +52,7 @@ def test_predict_single_image():
 
 
 def test_bad_image_file():
-    if model_type == 'image':
+    if model_type in ['image', 'video']:
         with pytest.raises(FileNotFoundError):
             predict('iDoNotExist.txt')
 
@@ -61,11 +62,18 @@ def test_predict_multiple_images():
     Test prediction on multiple images. Ensure that the classes returned are valid and that the
     results are consistent across all images.
     """
-
-    for image_file_index in range(1, 6):
-        image_file = str(image_file_index) + '.png'
-        prediction_result = predict(image_file)
-        assert len(prediction_result.keys()) == 2  # Ensure correct size dict returned
-        assert 'classes' in prediction_result and 'result' in prediction_result  # Ensure fields present
-        for result_key in prediction_result['result'].keys():  # Ensure all values accounted for in class list
-            assert result_key in prediction_result['classes']
+    if model_type == 'image':
+        for image_file_index in range(1, 6):
+            image_file = str(image_file_index) + '.png'
+            prediction_result = predict(image_file)
+            assert len(prediction_result.keys()) == 2  # Ensure correct size dict returned
+            assert 'classes' in prediction_result and 'result' in prediction_result  # Ensure fields present
+            for result_key in prediction_result['result'].keys():  # Ensure all values accounted for in class list
+                assert result_key in prediction_result['classes']
+    elif model_type == 'video':
+        for video_filename in os.listdir('/app/videos'):
+            prediction_result = predict(video_filename)
+            assert len(prediction_result.keys()) == 2  # Ensure correct size dict returned
+            assert 'classes' in prediction_result and 'result' in prediction_result  # Ensure fields present
+            for result_key in prediction_result['result'].keys():  # Ensure all values accounted for in class list
+                assert result_key in prediction_result['classes']

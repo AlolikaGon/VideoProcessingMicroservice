@@ -9,6 +9,7 @@ services:
       - ./debug:/app
       - ./model:/app/model
       - ./test/images:/app/images
+      - ./test/videos:/app/videos
     environment:
       - GUNICORN_CMD_ARGS="--reload"
     ports:
@@ -22,3 +23,4 @@ services:
     volumes:
       - ./model:/app/model
       - ./test/images:/app/images
+      - ./test/videos:/app/videos

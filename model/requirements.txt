@@ -3,3 +3,5 @@ requests
 rq
 redis
 pymongo
+decord
+numpy
